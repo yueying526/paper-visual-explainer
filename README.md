@@ -4,10 +4,9 @@
 
 将学术论文转化为小白也能看懂的互动可视化解读报告。
 
-<!-- 
-📸 TODO: Replace with actual demo screenshot/GIF
-![Demo](docs/demo.png)
--->
+![Demo — Attention Is All You Need](docs/demo.png)
+
+> Example: [Full interactive report for "Attention Is All You Need"](docs/example-transformer.html) (download and open in browser)
 
 ## Why This Tool?
 
@@ -82,6 +81,12 @@ PRs welcome! Especially for:
 - Additional report themes  
 - Support for more paper sources beyond arXiv
 - Multilingual report generation (English output)
+
+## Examples
+
+**Attention Is All You Need** (Vaswani et al., 2017) — [Download HTML report](docs/example-transformer.html)
+
+More examples coming soon.
 
 ## License
 
