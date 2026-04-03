@@ -28,17 +28,20 @@ Perfect for: tech bloggers, WeChat/公众号 writers, students, and anyone who w
 # Install dependencies
 pip install requests PyPDF2 pdfplumber reportlab
 
-# Download a paper from arXiv
-python scripts/download_paper.py "2401.12345"
+# One-click: download → extract → generate illustrations → build report
+python3 scripts/generate_all.py 1706.03762
 
-# Extract content from PDF
-python scripts/extract_pdf.py paper.pdf -o extracted.json
+# Fast mode (simpler illustrations, ~40% faster)
+python3 scripts/generate_all.py 1706.03762 --fast
+```
 
-# Generate interactive HTML report
-python scripts/generate_html_report.py paper_meta.json article_content.json -o report.html
+Or run each step individually:
 
-# Generate PDF report
-python scripts/generate_pdf_report.py paper_meta.json article_content.json -o report.pdf
+```bash
+python3 scripts/download_paper.py "1706.03762" -o /tmp/papers/
+python3 scripts/extract_pdf.py paper.pdf -o extracted --structure
+python3 scripts/call_nano_banana.py "your prompt" -o img.png --fast
+python3 scripts/generate_html_report.py meta.json content.json -o report.html
 ```
 
 ## Writing Style: Kazike (卡兹克风格)
