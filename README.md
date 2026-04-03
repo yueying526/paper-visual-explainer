@@ -1,40 +1,92 @@
-# 📄 Paper Visual Explainer
+# Paper Visual Explainer 📄✨
 
-> 将学术论文转化为小白也能看懂的可视化解读报告
+**Turn academic papers into beautiful, interactive visual reports that anyone can understand.**
 
-## 功能特性
+将学术论文转化为小白也能看懂的互动可视化解读报告。
 
-- **论文速读**：用大白话说清楚论文解决了什么问题、用了什么方法、有哪些局限
-- **术语+比喻融合**：每个关键术语配通俗解释、生活比喻、真实案例，点击展开
-- **行业应用场景**：具体行业的具体业务，不写废话
-- **行业展望**：有量化数据支撑的行业贡献分析
-- **互动 HTML 报告**：阅读进度条、导航高亮、滚动动画、数字计数动画
-- **PDF 报告**：支持中文，可打印分享
+<!-- 
+📸 TODO: Replace with actual demo screenshot/GIF
+![Demo](docs/demo.png)
+-->
 
-## 快速开始
+## Why This Tool?
+
+Reading academic papers is hard. This tool transforms dense research papers into engaging, visual reports with:
+
+- 🎯 **Plain language summaries** — what problem, what method, what limitations, in one paragraph
+- 📖 **Term + Analogy cards** — every key term gets a plain explanation, a life analogy, and a real case (expandable)
+- 🏭 **Industry applications** — specific industries, specific use cases, no fluff
+- 📊 **Data-driven insights** — quantified impact with real numbers
+- 🎨 **AI-generated illustrations** — via Nano Banana API
+- 📱 **Interactive HTML report** — reading progress bar, nav highlighting, scroll animations, number counters
+- 📄 **PDF export** — print-ready, full Chinese support
+
+Perfect for: tech bloggers, WeChat/公众号 writers, students, and anyone who wants to explain research to a broader audience.
+
+## Quick Start
 
 ```bash
+# Install dependencies
 pip install requests PyPDF2 pdfplumber reportlab
 
+# Download a paper from arXiv
+python scripts/download_paper.py "2401.12345"
+
+# Extract content from PDF
+python scripts/extract_pdf.py paper.pdf -o extracted.json
+
+# Generate interactive HTML report
 python scripts/generate_html_report.py paper_meta.json article_content.json -o report.html
+
+# Generate PDF report
+python scripts/generate_pdf_report.py paper_meta.json article_content.json -o report.pdf
 ```
 
-## 文件结构
+## Writing Style: Kazike (卡兹克风格)
+
+Reports use an engaging Chinese science communication style:
+
+- **Extended metaphors** running through the entire article (e.g., comparing a neural network to a "101-story company building")
+- **Conversational tone** — "对吧", "咋办呢", "牛逼坏了"
+- **Shocking data comparisons** — "3000:1.6 — a 3 order of magnitude reduction"
+- **Progressive narrative** — history → problem → solution → impact
+
+## Use as Claude Code Skill
+
+This tool is also available as a [Claude Code](https://claude.ai/code) skill. Once installed, just say:
+
+> "帮我解读这篇论文: [arXiv link]"
+
+It will automatically download, analyze, and generate a visual report.
+
+## Project Structure
 
 ```
 paper-visual-explainer/
 ├── scripts/
-│   ├── generate_html_report.py   # HTML 报告生成（含互动元素）
-│   ├── generate_pdf_report.py    # PDF 报告生成
-│   ├── download_paper.py         # arXiv 论文下载
-│   ├── extract_pdf.py            # PDF 内容提取
-│   └── call_nano_banana.py       # AI 配图生成
+│   ├── generate_html_report.py   # Interactive HTML report generator
+│   ├── generate_pdf_report.py    # PDF report generator  
+│   ├── download_paper.py         # arXiv paper downloader
+│   ├── extract_pdf.py            # PDF content extractor
+│   └── call_nano_banana.py       # AI illustration generator
 ├── references/
-│   ├── kazike_style_guide.md     # 写作风格指南
-│   └── nano_banana_api.md        # 配图 API 文档
-└── assets/
+│   ├── kazike_style_guide.md     # Writing style guide
+│   └── nano_banana_api.md        # Illustration API docs
+└── SKILL.md                      # Claude Code skill config
 ```
+
+## Contributing
+
+PRs welcome! Especially for:
+- New writing style templates
+- Additional report themes  
+- Support for more paper sources beyond arXiv
+- Multilingual report generation (English output)
 
 ## License
 
 MIT
+
+---
+
+**Author:** [Yueying Wu](https://yueyingai.com) · [GitHub](https://github.com/yueying526) · [X](https://x.com/wuyueying526)
