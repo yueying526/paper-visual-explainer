@@ -28,7 +28,11 @@ POE_API_KEY = os.getenv('POE_API_KEY', '')
 NANO_BANANA_MODEL = 'nano-banana-2'
 
 
-def generate_image(prompt, output_path, style='', width=1024, height=1024):
+FAST_PROMPT_SUFFIX = ", simple flat illustration, minimal, clean lines"
+FULL_PROMPT_SUFFIX = ", 如梦似幻的奇幻艺术, 壮丽, 空灵, 绘画般, 史诗, 魔幻, 奇幻艺术, 封面艺术, 梦幻"
+
+
+def generate_image(prompt, output_path, style='', width=1024, height=1024, fast=False):
     """
     调用Nano Banana API生成图片
 
@@ -38,6 +42,7 @@ def generate_image(prompt, output_path, style='', width=1024, height=1024):
         style: 图片风格描述 (可选,会追加到prompt中)
         width: 图片宽度 (默认: 1024)
         height: 图片高度 (默认: 1024)
+        fast: 使用更简单的提示词后缀以加快生成速度 (默认: False)
 
     Returns:
         生成的图片路径,如果失败返回None
@@ -47,9 +52,10 @@ def generate_image(prompt, output_path, style='', width=1024, height=1024):
         return None
 
     # 构建完整提示词
-    full_prompt = prompt
+    prompt_suffix = FAST_PROMPT_SUFFIX if fast else FULL_PROMPT_SUFFIX
+    full_prompt = prompt + prompt_suffix
     if style:
-        full_prompt = f"{prompt}, 风格: {style}"
+        full_prompt = f"{full_prompt}, 风格: {style}"
 
     print(f"🎨 正在生成图片...")
     print(f"   提示词: {full_prompt[:150]}...")
@@ -125,7 +131,7 @@ def generate_image(prompt, output_path, style='', width=1024, height=1024):
         return None
 
 
-def generate_paper_illustrations(paper_content, output_dir, num_images=3):
+def generate_paper_illustrations(paper_content, output_dir, num_images=3, fast=False, parallel=False):
     """
     根据论文内容生成多张配图
 
@@ -133,10 +139,14 @@ def generate_paper_illustrations(paper_content, output_dir, num_images=3):
         paper_content: 论文内容字典,包含标题、摘要、关键概念等
         output_dir: 输出目录
         num_images: 生成图片数量 (默认: 3)
+        fast: 使用更简单的提示词后缀以加快生成速度 (默认: False)
+        parallel: 并行生成图片 (默认: False)
 
     Returns:
         生成的图片路径列表
     """
+    import concurrent.futures
+
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -144,40 +154,54 @@ def generate_paper_illustrations(paper_content, output_dir, num_images=3):
     abstract = paper_content.get('abstract', '')
     key_concepts = paper_content.get('key_concepts', [])
 
-    generated_images = []
+    # 构建所有任务
+    tasks = []
 
     # 图片1: 论文核心概念示意图
     if title or abstract:
-        prompt1 = f"创建一个简洁现代的插图,展示这个概念: {title}。摘要: {abstract[:150]}。如梦似幻的奇幻艺术,壮丽,空灵,绘画般,史诗,魔幻,奇幻艺术,封面艺术,梦幻"
+        prompt1 = f"创建一个简洁现代的插图,展示这个概念: {title}。摘要: {abstract[:150]}"
         style1 = "技术示意图,极简主义,2026设计趋势,柔和色彩"
-
-        img_path1 = output_dir / "concept_illustration.png"
-        result = generate_image(prompt1, img_path1, style=style1)
-        if result:
-            generated_images.append(result)
-            time.sleep(3)  # 避免API频率限制
+        img_path1 = output_dir / "img1.png"
+        tasks.append((prompt1, img_path1, style1))
 
     # 图片2: 技术架构示意图
     if key_concepts:
         concepts_str = ', '.join(key_concepts[:5])
-        prompt2 = f"创建技术架构图,展示这些概念之间的关系: {concepts_str}。如梦似幻的奇幻艺术,壮丽,绘画般,奇幻艺术"
+        prompt2 = f"创建技术架构图,展示这些概念之间的关系: {concepts_str}"
         style2 = "系统架构,流程图,现代科技插图,简洁线条"
-
-        img_path2 = output_dir / "architecture_diagram.png"
-        result = generate_image(prompt2, img_path2, style=style2)
-        if result:
-            generated_images.append(result)
-            time.sleep(3)
+        img_path2 = output_dir / "img2.png"
+        tasks.append((prompt2, img_path2, style2))
 
     # 图片3: 对比/效果示意图
     if len(key_concepts) >= 2:
-        prompt3 = f"创建前后对比可视化图: {key_concepts[0]} 对比 {key_concepts[1]}。如梦似幻的奇幻艺术,壮丽,绘画般,魔幻,奇幻艺术"
+        prompt3 = f"创建前后对比可视化图: {key_concepts[0]} 对比 {key_concepts[1]}"
         style3 = "信息图表,数据可视化,简洁现代,2026设计趋势"
+        img_path3 = output_dir / "img3.png"
+        tasks.append((prompt3, img_path3, style3))
 
-        img_path3 = output_dir / "comparison_chart.png"
-        result = generate_image(prompt3, img_path3, style=style3)
-        if result:
-            generated_images.append(result)
+    tasks = tasks[:num_images]
+
+    def run_task(args):
+        p, path, s = args
+        return generate_image(p, path, style=s, fast=fast)
+
+    generated_images = []
+
+    if parallel and len(tasks) > 1:
+        print(f"🚀 并行生成 {len(tasks)} 张图片...")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(tasks)) as executor:
+            futures = {executor.submit(run_task, t): t for t in tasks}
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                if result:
+                    generated_images.append(result)
+    else:
+        for i, task in enumerate(tasks):
+            result = run_task(task)
+            if result:
+                generated_images.append(result)
+            if i < len(tasks) - 1:
+                time.sleep(2)  # 串行时避免频率限制
 
     return generated_images
 
@@ -251,6 +275,18 @@ def main():
         help='批量生成图片数量 (默认: 3)'
     )
 
+    parser.add_argument(
+        '--fast',
+        action='store_true',
+        help='使用更简单的提示词后缀以加快生成速度'
+    )
+
+    parser.add_argument(
+        '--parallel',
+        action='store_true',
+        help='并行生成多张图片 (使用 concurrent.futures)'
+    )
+
     args = parser.parse_args()
 
     # 批量生成模式
@@ -266,7 +302,9 @@ def main():
             images = generate_paper_illustrations(
                 paper_content,
                 args.output_dir,
-                args.num_images
+                args.num_images,
+                fast=args.fast,
+                parallel=args.parallel,
             )
 
             print(f"\n✅ 成功生成 {len(images)} 张图片:")
@@ -284,7 +322,7 @@ def main():
         parser.print_help()
         return 1
 
-    result = generate_image(args.prompt, args.output, args.style, args.width, args.height)
+    result = generate_image(args.prompt, args.output, args.style, args.width, args.height, fast=args.fast)
 
     return 0 if result else 1
 
